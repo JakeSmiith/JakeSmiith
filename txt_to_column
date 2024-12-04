@@ -1,0 +1,30 @@
+# You have to manually paste file into txt first
+
+library(data.table)
+library(stringr)
+
+# Read the large file as a single string
+text <- readLines("C:/Users/jakes/Downloads/data.txt", warn = FALSE)
+text <- paste(text, collapse = "")  # Combine into a single string
+# Split the data by ';'
+entries <- unlist(strsplit(text, ";"))
+
+# Trim leading and trailing whitespace
+entries <- str_trim(entries)
+# Extract names (everything before "<")
+names <- str_extract(entries, '^[^<]+')
+
+# Extract emails (everything between "<" and ">")
+emails <- str_extract(entries, '<(.*?)>')
+emails <- gsub("[<>]", "", emails)  # Remove '<' and '>'
+
+# Create a data.table with names and emails
+output <- data.table(Name = names, Email = emails)
+# Remove rows with missing emails
+output <- output[!is.na(Email)]
+
+# Trim extra spaces
+output[, Name := str_trim(Name)]
+output[, Email := str_trim(Email)]
+# Export the cleaned data
+fwrite(output, "C:/Users/jakes/Downloads/cleaned_emails.csv")
